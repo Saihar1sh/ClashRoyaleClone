@@ -7,11 +7,10 @@ public class ChestService : MonoSingletonGeneric<ChestService>
 {
     public List<ChestController> chestControllers;
 
-    public ChestStatus chestStatus;
-    public ChestTypes chestTypes;
-
-    private Button chest;
-
+    [SerializeField]
+    private ChestController chestPrefab;
+    [SerializeField]
+    private GameObject chestsSpawnLocation;
 
     protected override void Awake()
     {
@@ -23,7 +22,16 @@ public class ChestService : MonoSingletonGeneric<ChestService>
     // Start is called before the first frame update
     void Start()
     {
+        CreateRandomChest();
+    }
 
+    private void CreateRandomChest()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            int random = Random.Range(1, 4);
+            CreateChest((ChestTypes)random);
+        }
     }
 
     // Update is called once per frame
@@ -32,4 +40,11 @@ public class ChestService : MonoSingletonGeneric<ChestService>
 
     }
 
+    private void CreateChest(ChestTypes types)
+    {
+        ChestController chestContr = Instantiate(chestPrefab, chestsSpawnLocation.transform);
+        chestContr.chestTypes = types;
+        chestContr.chestStatus = ChestStatus.Locked;
+        chestControllers.Add(chestContr);
+    }
 }
