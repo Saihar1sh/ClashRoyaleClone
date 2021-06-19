@@ -11,6 +11,11 @@ public class ChestController : MonoBehaviour
 
     private int coinsToCollect = 0, gemsToCollect = 0, timerInMins = 0, timerInHrs = 0, timersInSecs = 0;
 
+    private bool timerStarted = false, hrsdecrease = false, minsDecrease = false, secsDecrease = false;
+
+    [Tooltip("Hrs, Mins, Secs")]
+    private Vector3 timerData;                                                  //x- hrs, y- mins, z- secs
+
     private Button chest;
     [SerializeField]
     private TextMeshProUGUI chestStatusTxt, chestTimerTxt;
@@ -35,6 +40,23 @@ public class ChestController : MonoBehaviour
 
     }
 
+    public void AddDetails(ChestScriptable chestScriptable)
+    {
+        chestStatus = ChestStatus.Locked;
+        chestTypes = chestScriptable.chestType;
+        timerData = chestScriptable.Timer;
+        coinsToCollect = Random.Range(chestScriptable.coinsMin, chestScriptable.coinsMax + 1);
+        gemsToCollect = Random.Range(chestScriptable.gemMin, chestScriptable.gemMax + 1);
+        ColorBlock colors = chest.colors;
+        Color _color = chestScriptable.Color;
+        colors.normalColor = _color;
+        _color.a = 0.9f;
+        colors.highlightedColor = _color;
+        _color.a = 0.75f;
+        colors.pressedColor = _color;
+        chest.colors = colors;
+    }
+
     private void ChestButtonPress()
     {
         ChestStatusCheck();
@@ -45,37 +67,6 @@ public class ChestController : MonoBehaviour
     {
         ColorBlock colors = chest.colors;
 
-        switch (chestTypes)
-        {
-            case ChestTypes.Common:
-                colors.normalColor = Color.gray;
-                coinsToCollect = Random.Range(100, 200);
-                gemsToCollect = Random.Range(10, 20);
-                timerInMins = 15;
-                break;
-
-            case ChestTypes.Rare:
-                colors.normalColor = new Color32(128, 0, 128, 255);
-                coinsToCollect = Random.Range(300, 500);
-                gemsToCollect = Random.Range(20, 40);
-                timerInMins = 30;
-                break;
-
-            case ChestTypes.Epic:
-                colors.normalColor = Color.blue;
-                coinsToCollect = Random.Range(600, 800);
-                gemsToCollect = Random.Range(45, 60);
-                timerInHrs = 1;
-                break;
-
-            case ChestTypes.Legendary:
-                colors.normalColor = new Color32(255, 215, 0, 255);
-                coinsToCollect = Random.Range(1000, 1200);
-                gemsToCollect = Random.Range(80, 100);
-                timerInHrs = 3;
-                break;
-        }
-        chest.colors = colors;
     }
     private void ChestStatusCheck()
     {
@@ -99,7 +90,21 @@ public class ChestController : MonoBehaviour
     {
         chestStatus = ChestStatus.Unlocking;
         chestStatusTxt.text = "Unlocking";
-        chestTimerTxt.text = timerInHrs + " hrs " + timerInMins + " mins " + timersInSecs + " secs";
+        chestTimerTxt.text = timerData.x + " hrs " + timerData.y + " mins " + timerData.z + " secs";
+        //float timerinSecs = timerData.z + timerData.y * 60 + timerData.x * 3600;
+        //Debug.Log("Timer to " + timerinSecs);
+        if (timerData.x <= 0)
+        {
+            timerData.x = 00;
+        }
+        else
+        {
+            // timerData
+        }
+        if (timerData.y <= 0)
+        {
+            timerData.y = 00;
+        }
     }
 
 
@@ -113,12 +118,14 @@ public class ChestController : MonoBehaviour
     }
     private void EmptySlot()
     {
+        gameObject.SetActive(false);
     }
 
 
-    IEnumerator OneSecWait()
+    IEnumerator OneSecWaitDecreament(int count)
     {
         yield return new WaitForSeconds(1);
+
     }
 
 }

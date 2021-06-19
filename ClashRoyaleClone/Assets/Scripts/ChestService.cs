@@ -8,6 +8,9 @@ public class ChestService : MonoSingletonGeneric<ChestService>
     public List<ChestController> chestControllers;
 
     [SerializeField]
+    private ChestScriptableList chestScriptableList;
+
+    [SerializeField]
     private ChestController chestPrefab;
     [SerializeField]
     private GameObject chestsSpawnLocation;
@@ -29,8 +32,8 @@ public class ChestService : MonoSingletonGeneric<ChestService>
     {
         for (int i = 0; i < 4; i++)
         {
-            int random = Random.Range(1, 4);
-            CreateChest((ChestTypes)random);
+            int random = Random.Range(0, 3);
+            CreateChest(chestScriptableList.chests[random]);
         }
     }
 
@@ -40,11 +43,14 @@ public class ChestService : MonoSingletonGeneric<ChestService>
 
     }
 
-    private void CreateChest(ChestTypes types)
+    private void CreateChest(ChestScriptable chestScriptable)
     {
         ChestController chestContr = Instantiate(chestPrefab, chestsSpawnLocation.transform);
-        chestContr.chestTypes = types;
-        chestContr.chestStatus = ChestStatus.Locked;
-        chestControllers.Add(chestContr);
+        chestContr.AddDetails(chestScriptable);
+    }
+
+    private void AddChestToList(ChestController chest)
+    {
+        chestControllers.Add(chest);
     }
 }
