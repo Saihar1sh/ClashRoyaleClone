@@ -10,8 +10,9 @@ public class ChestController : MonoBehaviour
     public ChestTypes chestTypes;
 
     private int coinsToCollect = 0, gemsToCollect = 0, timerInMins = 0, timerInHrs = 0, timersInSecs = 0;
+    private float secsConvert = -1, minsConvert = 0, skipCost = 0;
 
-    private bool timerStarted = false, hrsdecrease = false, minsDecrease = false, secsDecrease = false;
+    private bool timerStarted = false, timerRunning = false;
 
     [Tooltip("Hrs, Mins, Secs")]
     private Vector3 timerData;                                                  //x- hrs, y- mins, z- secs
@@ -36,8 +37,11 @@ public class ChestController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ChestType();
-
+        if (timerStarted)
+        {
+            TimerRunning();
+            SkipCostCal();
+        }
     }
 
     public void AddDetails(ChestScriptable chestScriptable)
@@ -63,68 +67,78 @@ public class ChestController : MonoBehaviour
 
     }
 
-    private void ChestType()
-    {
-        ColorBlock colors = chest.colors;
-
-    }
     private void ChestStatusCheck()
     {
         switch (chestStatus)
         {
             case ChestStatus.Locked:
-                StartTimer();
+                if (!ChestService.chestUnlocking)
+                    StartTimer();
+                else
+                    Debug.Log("A chest is unlocking");
+
                 break;
             case ChestStatus.Unlocking:
-                SkipTimer();
+                timerOptions();
                 break;
             case ChestStatus.Unlocked:
                 CollectTreasure();
                 break;
             case ChestStatus.Collected:
-                EmptySlot();
                 break;
         }
     }
     private void StartTimer()
     {
+        ChestService.chestUnlocking = true;
         chestStatus = ChestStatus.Unlocking;
         chestStatusTxt.text = "Unlocking";
-        chestTimerTxt.text = timerData.x + " hrs " + timerData.y + " mins " + timerData.z + " secs";
-        //float timerinSecs = timerData.z + timerData.y * 60 + timerData.x * 3600;
-        //Debug.Log("Timer to " + timerinSecs);
-        if (timerData.x <= 0)
-        {
-            timerData.x = 00;
-        }
-        else
-        {
-            // timerData
-        }
-        if (timerData.y <= 0)
-        {
-            timerData.y = 00;
-        }
+        secsConvert = timerData.z + timerData.y * 60 + timerData.x * 3600;
+        Debug.Log("Timer to " + secsConvert);
+        timerStarted = true;
+        timerRunning = true;
     }
 
+    private void TimerRunning()
+    {
+        if (timerRunning && secsConvert > 0)
+            StartCoroutine(OneSecWaitDecreament());
+        else if (secsConvert == 0)
+        {
+            ChestService.chestUnlocking = false;
+            chestStatus = ChestStatus.Unlocked;
+        }
+        chestTimerTxt.text = "" + secsConvert;
+        minsConvert = secsConvert / 60;
+        SkipCostCal();
 
-    private void SkipTimer()
+    }
+
+    private void SkipCostCal()
+    {
+        skipCost = (int)Mathf.Ceil(minsConvert) / 10;
+    }
+
+    private void timerOptions()
     {
 
     }
 
     private void CollectTreasure()
     {
-    }
-    private void EmptySlot()
-    {
-        gameObject.SetActive(false);
+        ChestService.Instance.gems += gemsToCollect;
+        ChestService.Instance.coins += coinsToCollect;
+        Destroy(gameObject);
+        
     }
 
 
-    IEnumerator OneSecWaitDecreament(int count)
+    IEnumerator OneSecWaitDecreament()
     {
+        timerRunning = false;
         yield return new WaitForSeconds(1);
+        secsConvert--;
+        timerRunning = true;
 
     }
 

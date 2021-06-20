@@ -269,7 +269,7 @@ MonoBehaviour:
   chestStatus: 0
   chestTypes: 0
   chestStatusTxt: {fileID: 39405588560111253}
-  chestTimerTxt: {fileID: 0}
+  chestTimerTxt: {fileID: 3951855722023922117}
 --- !u!1 &1475852155360642703
 GameObject:
   m_ObjectHideFlags: 0
@@ -304,8 +304,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -18.65}
-  m_SizeDelta: {x: 0, y: -37.303528}
+  m_AnchoredPosition: {x: 0, y: -56.8}
+  m_SizeDelta: {x: 0, y: -117.36957}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8945398328643903767
 CanvasRenderer:

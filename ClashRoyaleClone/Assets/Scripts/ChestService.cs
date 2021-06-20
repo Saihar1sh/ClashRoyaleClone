@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ChestService : MonoSingletonGeneric<ChestService>
 {
@@ -14,6 +15,12 @@ public class ChestService : MonoSingletonGeneric<ChestService>
     private ChestController chestPrefab;
     [SerializeField]
     private GameObject chestsSpawnLocation;
+
+    public TextMeshProUGUI coinsTxt, gemsTxt;
+
+    public int coins = 100, gems = 100;
+
+    public static bool chestUnlocking = false;
 
     protected override void Awake()
     {
@@ -32,7 +39,7 @@ public class ChestService : MonoSingletonGeneric<ChestService>
     {
         for (int i = 0; i < 4; i++)
         {
-            int random = Random.Range(0, 3);
+            int random = Random.Range(0, 4);
             CreateChest(chestScriptableList.chests[random]);
         }
     }
@@ -40,7 +47,13 @@ public class ChestService : MonoSingletonGeneric<ChestService>
     // Update is called once per frame
     void Update()
     {
+        CurrenciesUIUpdate();
+    }
 
+    private void CurrenciesUIUpdate()
+    {
+        coinsTxt.text = "" + coins;
+        gemsTxt.text = "" + gems;
     }
 
     private void CreateChest(ChestScriptable chestScriptable)
