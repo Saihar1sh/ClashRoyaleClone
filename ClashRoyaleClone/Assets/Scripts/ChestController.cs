@@ -6,18 +6,23 @@ using System.Collections;
 
 public class ChestController : MonoBehaviour
 {
+    //[HideInInspector]
     public ChestStatus chestStatus;
+    //[HideInInspector]
     public ChestTypes chestTypes;
 
     private int coinsToCollect = 0, gemsToCollect = 0, timerInMins = 0, timerInHrs = 0, timersInSecs = 0;
-    private float secsConvert = -1, minsConvert = 0, skipCost = 0;
+    private float secsConvert = -1, skipConvert = 0;
 
-    private bool timerStarted = false, timerRunning = false;
+    public float skipCost = 0;
+
+    private bool timerStarted = false, timerRunning = false, timerSkipped = false;
 
     [Tooltip("Hrs, Mins, Secs")]
     private Vector3 timerData;                                                  //x- hrs, y- mins, z- secs
 
     private Button chest;
+
     [SerializeField]
     private TextMeshProUGUI chestStatusTxt, chestTimerTxt;
 
@@ -28,10 +33,13 @@ public class ChestController : MonoBehaviour
 
     }
 
-    // Start is called before the first frame update
     void Start()
     {
+        timerSkipped = false;
+        chestStatus = ChestStatus.Locked;
         chestStatusTxt.text = "Locked";
+        secsConvert = timerData.z + timerData.y * 60 + timerData.x * 3600;
+        chestTimerTxt.text = "" + secsConvert;
     }
 
     // Update is called once per frame
@@ -39,8 +47,8 @@ public class ChestController : MonoBehaviour
     {
         if (timerStarted)
         {
-            TimerRunning();
             SkipCostCal();
+            TimerRunning();
         }
     }
 
@@ -59,6 +67,7 @@ public class ChestController : MonoBehaviour
         _color.a = 0.75f;
         colors.pressedColor = _color;
         chest.colors = colors;
+        gameObject.SetActive(true);
     }
 
     private void ChestButtonPress()
@@ -75,11 +84,11 @@ public class ChestController : MonoBehaviour
                 if (!ChestService.chestUnlocking)
                     StartTimer();
                 else
-                    Debug.Log("A chest is unlocking");
+                    ChestService.Instance.AddToQueOptions(this);
 
                 break;
             case ChestStatus.Unlocking:
-                timerOptions();
+                ChestService.Instance.SkipTimerOptions(this);
                 break;
             case ChestStatus.Unlocked:
                 CollectTreasure();
@@ -93,43 +102,46 @@ public class ChestController : MonoBehaviour
         ChestService.chestUnlocking = true;
         chestStatus = ChestStatus.Unlocking;
         chestStatusTxt.text = "Unlocking";
-        secsConvert = timerData.z + timerData.y * 60 + timerData.x * 3600;
-        Debug.Log("Timer to " + secsConvert);
         timerStarted = true;
         timerRunning = true;
     }
 
     private void TimerRunning()
     {
-        if (timerRunning && secsConvert > 0)
+        if (timerRunning && secsConvert > 0 && !timerSkipped)
             StartCoroutine(OneSecWaitDecreament());
-        else if (secsConvert == 0)
+        else if (secsConvert == 0 || timerSkipped)
         {
-            ChestService.chestUnlocking = false;
-            chestStatus = ChestStatus.Unlocked;
+            TimerCompletedRun();
         }
         chestTimerTxt.text = "" + secsConvert;
-        minsConvert = secsConvert / 60;
-        SkipCostCal();
+        skipConvert = secsConvert / 10;
 
+    }
+
+    private void TimerCompletedRun()
+    {
+        secsConvert = 0;
+        ChestService.chestUnlocking = false;
+        chestStatus = ChestStatus.Unlocked;
+        chestStatusTxt.text = "Unlocked";
+        ChestService.timerCompleted = true;
+        timerRunning = false;
     }
 
     private void SkipCostCal()
     {
-        skipCost = (int)Mathf.Ceil(minsConvert) / 10;
+        skipCost = (int)Mathf.Ceil(skipConvert);
     }
 
-    private void timerOptions()
-    {
 
-    }
 
     private void CollectTreasure()
     {
-        ChestService.Instance.gems += gemsToCollect;
-        ChestService.Instance.coins += coinsToCollect;
+        ChestService.Instance.AddGems(gemsToCollect);
+        ChestService.Instance.AddCoins(coinsToCollect);
         Destroy(gameObject);
-        
+        ChestService.Instance.chestNum--;
     }
 
 
